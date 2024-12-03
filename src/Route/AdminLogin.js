@@ -35,4 +35,16 @@ router.post("/admin/login", async (req, res) => {
     }
 });
 
+// Logout Route 
+router.post('/admin/logout', (req, res) => { 
+    req.session.destroy(err => { 
+        if (err) { 
+            
+            return res.status(500).json({ msg: 'Failed to logout' }); 
+        } 
+        res.clearCookie('connect.sid'); 
+        res.json({ msg: 'Logged out successfully' }); 
+    })
+}); 
+
 export default router;
