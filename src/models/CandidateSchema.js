@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 // import { stringify } from "uuid";
 
 const CandidateSchema = new mongoose.Schema({
+
+    username:{
+        type : String,
+        required : true
+    },
     party : {
         type : String,
         required : true
@@ -20,7 +25,9 @@ const CandidateSchema = new mongoose.Schema({
         required : true
     },
     photo : {
-        type : Buffer,
+        //type : Buffer,
+        type : String,
+        required: true
 
     },
     isSelected :{

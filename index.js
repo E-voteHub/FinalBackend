@@ -1,4 +1,4 @@
-import express, { response } from 'express';
+import express from 'express';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
@@ -9,12 +9,17 @@ import session from 'express-session';
 import cors from 'cors'
 import RegisteredUser from './src/models/RegisteredUser.js';
 import Candidate from './src/models/CandidateSchema.js';
+import Admin from './src/models/AdminSchema.js'
 import { v4 as uuidv4 } from 'uuid';
 import { GridFSBucket } from 'mongodb'; //for image bucket
-// import cloudinary from './src/Storage/CloudinaryConfig.js';
-// import Upload from './src/Storage/MulterConfig.js';
-
-import multer from 'multer';
+import { v2 as cloudinary } from "cloudinary"
+import { unlink } from "fs"
+import cloudinaryConfig from "./src/Storage/Cloudinary.js"
+import upload from './src/Storage/Multer.js';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import adminRegister from './src/Route/AdminRegister.js'
+import adminLogin from './src/Route/AdminLogin.js'
+// import multer from 'multer';
 
 
 dotenv.config()
@@ -25,8 +30,11 @@ const app = express();
 const PORT = process.env.PORT || 3000
 
 // Configure Multer for file uploads 
-const storage = multer.memoryStorage(); 
-const upload = multer({ storage });
+// const storage = multer.memoryStorage(); 
+// const upload = multer({ storage });
+//Gemini ka chutiyap
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -36,22 +44,23 @@ credentials: true
 })
 );
 
+
 //mongo ki details hai sensitive
 const mongoUsername = process.env.MONGO_USERNAME; 
 const mongoPassword = process.env.MONGO_PASSWORD; 
 const mongoCluster = process.env.MONGO_CLUSTER;
-let bucket ;
+
 //mongooose atlas connnection
 await mongoose.connect(`mongodb+srv://${mongoUsername}:${mongoPassword}@${mongoCluster}/?retryWrites=true&w=majority&appName=Cluster0`)
     .then((connection) => {
-        console.log("DataBase Connected");
-         // Create a GridFSBucket instance for file storage
-         bucket = new GridFSBucket(connection.connection.db, {
-            bucketName: 'images',
-        });
+        console.log("DataBase Connected", connection.connection.db.databaseName);
+        //  // Create a GridFSBucket instance for file storage
+        //  bucket = new GridFSBucket(connection.connection.db, {
+        //     bucketName: 'images',
+        // });
 
-        // You can now use `bucket` for file uploads and downloads
-        console.log("GridFSBucket instance created successfully");
+        // // You can now use `bucket` for file uploads and downloads
+        // console.log("GridFSBucket instance created successfully");
     })
     .catch((e) => {
         console.error("Error :", e);
@@ -86,11 +95,17 @@ app.use(session({ secret: 'yourSecretKey', resave: false, saveUninitialized: fal
 app.use(passport.initialize());
 app.use(passport.session());
 
+//User authentication
 passport.use(new LocalStrategy(User.authenticate()));
 
 // Use static serialize and deserialize of model for passport session support
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
+
+
+
+app.use(adminRegister)
+app.use(adminLogin)
 
 app.post('/register', (req, res) => {
     console.log("API DATA = ", req.body);
@@ -127,6 +142,7 @@ app.post('/register', (req, res) => {
 
 app.post('/login', passport.authenticate('local'), (req, res) => { // Instead of res.redirect, send a JSON response 
    req.session.user = req.user; 
+   
    const email = req.body.email;
   // console.log(email," ",req.body)
    User.findOne({Email : email})
@@ -207,98 +223,99 @@ app.post("/registertovote", async (req, res) => {
   }
 });
 
-app.post('/candidate/register', upload.single('photo'), async (req, res) => {
-  try {
-    const { party, candidateName, voterID, gender } = req.body;
-    const { originalname, buffer } = req.file;
-    const isSelected = false
-     console.log(originalname,buffer);
+// app.post('/candidate/register', upload.single('photo'), async (req, res) => {
+//   try {
+//     const { username , party, candidateName, voterID, gender } = req.body;
+//     // const { originalname, buffer } = req.file;
+//     const isSelected = false
+//     //  console.log(originalname,buffer);
      
 
      
-    const uploadStream = bucket.openUploadStream(originalname);
-    uploadStream.write(buffer);
-    uploadStream.end();
+//     const uploadStream = bucket.openUploadStream(originalname);
+//     uploadStream.write(buffer);
+//     uploadStream.end();
 
-    uploadStream.on('finish', async () => {
-      const newCandidate = new Candidate({ 
-        party, 
-        candidateName, 
-        voterID, 
-        gender, 
-        photo: originalname ,// Store the filename in the candidate record
-        isSelected
-      });
-      await newCandidate.save();
-      res.status(200).json({ message: 'Candidate registered successfully!' });
-    });
+//     uploadStream.on('finish', async () => {
+//       const newCandidate = new Candidate({ 
+//         username,
+//         party, 
+//         candidateName, 
+//         voterID, 
+//         gender, 
+//         photo: originalname ,// Store the filename in the candidate record
+//         isSelected
+//       });
+//       await newCandidate.save();
+//       res.status(200).json({ message: 'Candidate registered successfully! Pending Approval !!' });
+//     });
 
-    uploadStream.on('error', (error) => {
-      console.error('Error uploading image:', error);
-      res.status(500).json({ message: 'An error occurred while uploading the image!' });
-    });
+//     uploadStream.on('error', (error) => {
+//       console.error('Error uploading image:', error);
+//       res.status(500).json({ message: 'An error occurred while uploading the image!' });
+//     });
 
-  } catch (error) {
-    console.error('Error registering candidate:', error);
-    res.status(500).json({ message: 'An error occurred while registering the candidate!' });
-  }
-});
-
-
+//   } catch (error) {
+//     console.error('Error registering candidate:', error);
+//     res.status(500).json({ message: 'An error occurred while registering the candidate!' });
+//   }
+// });
 
 
-app.get('/images', async (req, res) => {
-  console.log('Request received for all images');
 
-  try {
-    // Query for image filenames in GridFS
-    const images = await bucket.find({}).toArray();
 
-    if (images.length === 0) {
-      return res.status(404).send('No images found');
-    }
+// app.get('/images', async (req, res) => {
+//   console.log('Request received for all images');
 
-    // Helper function to convert image to base64
-    const convertToBase64 = (filename) => {
-      return new Promise((resolve, reject) => {
-        const chunks = [];
-        const downloadStream = bucket.openDownloadStreamByName(filename);
+//   try {
+//     // Query for image filenames in GridFS
+//     const images = await bucket.find({}).toArray();
 
-        downloadStream.on('data', (chunk) => {
-          chunks.push(chunk);
-        });
+//     if (images.length === 0) {
+//       return res.status(404).send('No images found');
+//     }
 
-        downloadStream.on('error', (error) => {
-          console.error('Error during image retrieval:', error);
-          reject(error);
-        });
+//     // Helper function to convert image to base64
+//     const convertToBase64 = (filename) => {
+//       return new Promise((resolve, reject) => {
+//         const chunks = [];
+//         const downloadStream = bucket.openDownloadStreamByName(filename);
 
-        downloadStream.on('end', () => {
-          const buffer = Buffer.concat(chunks);
-          const base64 = buffer.toString('base64');
-          resolve(base64);
-        });
-      });
-    };
+//         downloadStream.on('data', (chunk) => {
+//           chunks.push(chunk);
+//         });
 
-    // Convert each image to base64 and collect results
-    const imagePromises = images.map(image => convertToBase64(image.filename));
-    const base64Images = await Promise.all(imagePromises);
+//         downloadStream.on('error', (error) => {
+//           console.error('Error during image retrieval:', error);
+//           reject(error);
+//         });
 
-    // Send base64 images and filenames as JSON
-    const imageResponse = images.map((image, index) => ({
-      filename: image.filename,
-      data: base64Images[index]
-    }));
+//         downloadStream.on('end', () => {
+//           const buffer = Buffer.concat(chunks);
+//           const base64 = buffer.toString('base64');
+//           resolve(base64);
+//         });
+//       });
+//     };
+
+//     // Convert each image to base64 and collect results
+//     const imagePromises = images.map(image => convertToBase64(image.filename));
+//     const base64Images = await Promise.all(imagePromises);
+
+//     // Send base64 images and filenames as JSON
+//     const imageResponse = images.map((image, index) => ({
+//       filename: image.filename,
+//       data: base64Images[index]
+//     }));
    
-    res.status(200).json(imageResponse);
-  } catch (error) {
-    console.error('Error fetching images:', error);
-    res.status(500).send('Internal Server Error');
-  }
+//     res.status(200).json(imageResponse);
+//   } catch (error) {
+//     console.error('Error fetching images:', error);
+//     res.status(500).send('Internal Server Error');
+//   }
 
 
-});
+// });
 
 
 // sends candidate info to candidateGallery.jsx
@@ -312,42 +329,92 @@ app.get("/candidate", async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 })
+.post('/candidate/register', upload.single('photo'), async (req, res) => {
+  try {
+    const { username , party, candidateName, voterID, gender } = req.body;
+    // const { originalname, buffer } = req.file;
+    const isSelected = false
+    //  console.log(originalname,buffer);
+     cloudinaryConfig()
+    let uploadRes = await cloudinary.uploader.upload(
+        req.file.path, {
+            folder: 'test',
+        }
+    )
+    .catch((error) => {
+        console.log(error);
+    });
+    unlink(req.file.path, (err) => {
+        if (err) throw err;
+        console.log('path/file.txt was deleted');
+    });
+    console.log(uploadRes?.secure_url)
+     
+
+    const newCandidate = new Candidate({ 
+        username,
+        party, 
+        candidateName, 
+        voterID, 
+        gender, 
+        photo:uploadRes?.secure_url,// Store the Photo Link in the candidate record
+        isSelected
+      });
+      await newCandidate.save();
+      res.status(200).json({ message: 'Candidate registered successfully! Pending Approval !!' });
+
+  } catch (error) {
+    console.error('Error registering candidate:', error);
+    res.status(500).json({ message: 'An error occurred while registering the candidate!' });
+  }
+})
 .put("/candidate", async (req,res)=>{
 const {id} = req.body
+console.log(id);
+
 try{
 await Candidate.updateOne({_id : id},{isSelected: true})
- res.status(200).json({success:true})
+ res.status(200).json({success:true,message:`${id} updated successfully`})
 }catch(error){
   console.error("Error Accepting user in PUT :: /candidate " , error)
 }
 })
-.delete("/candidate", async (req,res)=>{
-  const {id} = req.body
- // console.log(req.body);
-  
-Candidate.find({ _id: id })
-    .then(documents => {
+.delete('/candidate', async (req, res) => {
+    const { id, filename } = req.body;
+    try {
+        const documents = await Candidate.find({ _id: id });
         console.log('Documents found:', documents);
-        // If documents are found, you can attempt to delete them
+
         if (documents.length > 0) {
-            Candidate.deleteOne({ _id : id })
-                .then(result => {
-                    console.log('Delete result:', result);
-                })
-                .catch(error => {
-                    console.error('Error deleting candidate:', error);
-                });
+            await Candidate.deleteOne({ _id: id });
+            console.log('Candidate deleted successfully');
+
+            
+            res.status(200).send('Candidate deleted successfully');
         } else {
             console.log('No matching documents found to delete.');
+            res.status(404).send('No matching documents found');
         }
-    })
-    .catch(error => {
-        console.error('Error finding candidate:', error);
-    });
+    } catch (error) {
+        console.error('Error finding or deleting candidate:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
 
+app.post("/chat", async (req, res) => {
+  const { prompt } = req.body;
+  try {
+    // Add specific instructions to the prompt for a detailed markdown response
+    const enhancedPrompt = `${prompt}\n\nPlease provide a detailed response only on Election and if the propmt question is about something else reply with "keep this chat for election related topic only" formatted in Markdown, including headings, bullet points, new line for subheading and heading and links where applicable.`;
 
-})
-
+    const result = await model.generateContent(enhancedPrompt);
+   // console.log("Response =", result.response.text());
+    res.status(200).json(result.response.text());
+  } catch (error) {
+    console.error("Error Generating Content in /chat :: post", error);
+    res.status(500).json({ error: "Error generating content" });
+  }
+});
 
 
 // session route 
