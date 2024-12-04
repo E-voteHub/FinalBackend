@@ -38,13 +38,11 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(cors({
-    origin: '*', // Allow any origin
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
-    allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
-}));
-
+app.use(cors({ 
+  origin: '*', 
+ methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
+ allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'], 
+ }));
 
 
 //mongo ki details hai sensitive
