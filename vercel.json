@@ -1,13 +1,11 @@
 {
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://your-api-url.com/api/$1" }
-  ],
   "headers": [
     {
       "source": "/api/(.*)",
       "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,DELETE,OPTIONS" }
+        { "key": "Access-Control-Allow-Origin", "value": "http://localhost:5173" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,DELETE,OPTIONS" },
+        { "key": "Access-Control-Allow-Credentials", "value": "true" }
       ]
     }
   ]
