@@ -149,6 +149,10 @@ app.post('/api/register', (req, res) => {
         });
 });
 
+app.get("/",(req,res)=>{
+  res.send("Hellow world")
+})
+
 app.post('/api/login', passport.authenticate('local'), (req, res) => { 
    req.session.user = req.user; 
    
