@@ -4,7 +4,7 @@ import Admin from '../models/AdminSchema.js';
 
 const router = express.Router();
 
-router.post("/admin/login", async (req, res) => {
+router.post("/api/admin/login", async (req, res) => {
     try {
         const { username, password } = req.body;
 
@@ -36,7 +36,7 @@ router.post("/admin/login", async (req, res) => {
 });
 
 // Logout Route 
-router.post('/admin/logout', (req, res) => { 
+router.post('/api/admin/logout', (req, res) => { 
     req.session.destroy(err => { 
         if (err) { 
             

@@ -11,7 +11,7 @@ import RegisteredUser from './src/models/RegisteredUser.js';
 import Candidate from './src/models/CandidateSchema.js';
 import Admin from './src/models/AdminSchema.js'
 import { v4 as uuidv4 } from 'uuid';
-import { GridFSBucket } from 'mongodb'; //for image bucket
+// import { GridFSBucket } from 'mongodb'; //for image bucket
 import { v2 as cloudinary } from "cloudinary"
 import { unlink } from "fs"
 import cloudinaryConfig from "./src/Storage/Cloudinary.js"
@@ -32,17 +32,19 @@ const PORT = process.env.PORT || 3000
 // Configure Multer for file uploads 
 // const storage = multer.memoryStorage(); 
 // const upload = multer({ storage });
-//Gemini ka chutiyap
+//Gemini 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(cors({ 
-origin: 'http://localhost:5173', // The origin you want to allow 
-credentials: true 
-})
-);
+app.use(cors({
+    origin: '*', // Allow any origin
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
+    allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+}));
+
 
 
 //mongo ki details hai sensitive
@@ -52,15 +54,8 @@ const mongoCluster = process.env.MONGO_CLUSTER;
 
 //mongooose atlas connnection
 await mongoose.connect(`mongodb+srv://${mongoUsername}:${mongoPassword}@${mongoCluster}/?retryWrites=true&w=majority&appName=Cluster0`)
-    .then((connection) => {
-        console.log("DataBase Connected", connection.connection.db.databaseName);
-        //  // Create a GridFSBucket instance for file storage
-        //  bucket = new GridFSBucket(connection.connection.db, {
-        //     bucketName: 'images',
-        // });
-
-        // // You can now use `bucket` for file uploads and downloads
-        // console.log("GridFSBucket instance created successfully");
+    .then(() => {
+        console.log("DataBase Connected");
     })
     .catch((e) => {
         console.error("Error :", e);
@@ -69,6 +64,7 @@ await mongoose.connect(`mongodb+srv://${mongoUsername}:${mongoPassword}@${mongoC
     
 const Schema = mongoose.Schema;
 
+// Dont worry you can steal this schema but dont mess my project
 const UserSchema = new Schema({
     username: { type: String, unique: true, required: true },
     Email: {
@@ -86,7 +82,7 @@ const UserSchema = new Schema({
 
 
 
-// Apply the plugin before creating the model
+
 UserSchema.plugin(passportLocalMongoose);
 
 const User = mongoose.model('User', UserSchema);
@@ -95,20 +91,18 @@ app.use(session({ secret: 'yourSecretKey', resave: false, saveUninitialized: fal
 app.use(passport.initialize());
 app.use(passport.session());
 
-//User authentication
+//User ka authentication
 passport.use(new LocalStrategy(User.authenticate()));
 
-// Use static serialize and deserialize of model for passport session support
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 
+app.use('/api/admin/register', adminRegister); 
+app.use('/api/admin/login', adminLogin);
 
-app.use(adminRegister)
-app.use(adminLogin)
-
-app.post('/register', (req, res) => {
-    console.log("API DATA = ", req.body);
+app.post('/api/register', (req, res) => {
+    
 
     const username = req.body.username;
     const Email = req.body.email;
@@ -140,7 +134,7 @@ app.post('/register', (req, res) => {
         });
 });
 
-app.post('/login', passport.authenticate('local'), (req, res) => { // Instead of res.redirect, send a JSON response 
+app.post('/api/login', passport.authenticate('local'), (req, res) => { 
    req.session.user = req.user; 
    
    const email = req.body.email;
@@ -159,7 +153,7 @@ app.post('/login', passport.authenticate('local'), (req, res) => { // Instead of
 
 //RegistertoVote
 
-app.post("/registertovote", async (req, res) => {
+app.post("/api/registertovote", async (req, res) => {
   const { username, FullName, Age, DOB, PhoneNo, AadharNo, VoterID } = req.body;
 
   try {
@@ -223,103 +217,14 @@ app.post("/registertovote", async (req, res) => {
   }
 });
 
-// app.post('/candidate/register', upload.single('photo'), async (req, res) => {
-//   try {
-//     const { username , party, candidateName, voterID, gender } = req.body;
-//     // const { originalname, buffer } = req.file;
-//     const isSelected = false
-//     //  console.log(originalname,buffer);
-     
-
-     
-//     const uploadStream = bucket.openUploadStream(originalname);
-//     uploadStream.write(buffer);
-//     uploadStream.end();
-
-//     uploadStream.on('finish', async () => {
-//       const newCandidate = new Candidate({ 
-//         username,
-//         party, 
-//         candidateName, 
-//         voterID, 
-//         gender, 
-//         photo: originalname ,// Store the filename in the candidate record
-//         isSelected
-//       });
-//       await newCandidate.save();
-//       res.status(200).json({ message: 'Candidate registered successfully! Pending Approval !!' });
-//     });
-
-//     uploadStream.on('error', (error) => {
-//       console.error('Error uploading image:', error);
-//       res.status(500).json({ message: 'An error occurred while uploading the image!' });
-//     });
-
-//   } catch (error) {
-//     console.error('Error registering candidate:', error);
-//     res.status(500).json({ message: 'An error occurred while registering the candidate!' });
-//   }
-// });
 
 
 
 
-// app.get('/images', async (req, res) => {
-//   console.log('Request received for all images');
-
-//   try {
-//     // Query for image filenames in GridFS
-//     const images = await bucket.find({}).toArray();
-
-//     if (images.length === 0) {
-//       return res.status(404).send('No images found');
-//     }
-
-//     // Helper function to convert image to base64
-//     const convertToBase64 = (filename) => {
-//       return new Promise((resolve, reject) => {
-//         const chunks = [];
-//         const downloadStream = bucket.openDownloadStreamByName(filename);
-
-//         downloadStream.on('data', (chunk) => {
-//           chunks.push(chunk);
-//         });
-
-//         downloadStream.on('error', (error) => {
-//           console.error('Error during image retrieval:', error);
-//           reject(error);
-//         });
-
-//         downloadStream.on('end', () => {
-//           const buffer = Buffer.concat(chunks);
-//           const base64 = buffer.toString('base64');
-//           resolve(base64);
-//         });
-//       });
-//     };
-
-//     // Convert each image to base64 and collect results
-//     const imagePromises = images.map(image => convertToBase64(image.filename));
-//     const base64Images = await Promise.all(imagePromises);
-
-//     // Send base64 images and filenames as JSON
-//     const imageResponse = images.map((image, index) => ({
-//       filename: image.filename,
-//       data: base64Images[index]
-//     }));
-   
-//     res.status(200).json(imageResponse);
-//   } catch (error) {
-//     console.error('Error fetching images:', error);
-//     res.status(500).send('Internal Server Error');
-//   }
-
-
-// });
 
 
 // sends candidate info to candidateGallery.jsx
-app.get("/candidate", async (req, res) => {
+app.get("/api/candidate", async (req, res) => {
   try {
     const response = await Candidate.find({isSelected : false});
     //console.log(response);
@@ -329,7 +234,7 @@ app.get("/candidate", async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 })
-.post('/candidate/register', upload.single('photo'), async (req, res) => {
+.post('/api/candidate/register', upload.single('photo'), async (req, res) => {
   try {
     const { username , party, candidateName, voterID, gender } = req.body;
     // const { originalname, buffer } = req.file;
@@ -368,7 +273,7 @@ app.get("/candidate", async (req, res) => {
     res.status(500).json({ message: 'An error occurred while registering the candidate!' });
   }
 })
-.put("/candidate", async (req,res)=>{
+.put("/api/candidate", async (req,res)=>{
 const {id} = req.body
 console.log(id);
 
@@ -379,7 +284,7 @@ await Candidate.updateOne({_id : id},{isSelected: true})
   console.error("Error Accepting user in PUT :: /candidate " , error)
 }
 })
-.delete('/candidate', async (req, res) => {
+.delete('/api/candidate', async (req, res) => {
     const { id, filename } = req.body;
     try {
         const documents = await Candidate.find({ _id: id });
@@ -401,7 +306,7 @@ await Candidate.updateOne({_id : id},{isSelected: true})
     }
 });
 
-app.post("/chat", async (req, res) => {
+app.post("/api/chat", async (req, res) => {
   const { prompt } = req.body;
   try {
     // Add specific instructions to the prompt for a detailed markdown response
@@ -418,7 +323,7 @@ app.post("/chat", async (req, res) => {
 
 
 // session route 
-app.get('/session', (req, res) => { 
+app.get('/api/session', (req, res) => { 
     if (req.session.user) { 
         res.send({ user: req.session.user }); 
     } else { 
@@ -428,7 +333,7 @@ app.get('/session', (req, res) => {
 
 // Logout route
 
-app.get('/logout', function(req, res, next) {
+app.get('/api/logout', function(req, res, next) {
   req.logout(function(err) {
     if (err) {
       return next(err);
