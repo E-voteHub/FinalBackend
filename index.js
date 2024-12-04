@@ -100,7 +100,7 @@ app.use(session({
   saveUninitialized: false, 
   cookie: { 
     secure: process.env.NODE_ENV === 'production',// Use secure cookies in production
-    httpOnly: true,
+    // httpOnly: true,
    } 
 }));
 app.use(passport.initialize());
