@@ -20,7 +20,8 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import adminRegister from './src/Route/AdminRegister.js'
 import adminLogin from './src/Route/AdminLogin.js'
 // import multer from 'multer';
-
+const app = express();
+const PORT = process.env.PORT || 3000
 
 dotenv.config()
 
@@ -32,8 +33,7 @@ app.use(cors({
 }));
 
 
-const app = express();
-const PORT = process.env.PORT || 3000
+
 
 // Configure Multer for file uploads 
 // const storage = multer.memoryStorage(); 
