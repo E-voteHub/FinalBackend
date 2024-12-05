@@ -26,12 +26,21 @@ const PORT = process.env.PORT || 3000
 
 
 
-const corsOptions = {
-    origin: 'https://votelyovs.netlify.app', // Allow all origins (can be replaced with a specific domain or array of domains)
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
-    allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
-};
-app.use(cors(corsOptions));
+const allowedOrigins = ['https://votelyovs.netlify.app', 'http://localhost:5173']; 
+app.use(cors({ 
+  origin: function (origin, callback) {
+   // Check if the origin is in the allowed origins list or if it's undefined (which means it's a same-origin request). 
+   if (!origin || allowedOrigins.indexOf(origin) !== -1) { 
+    callback(null, true); 
+  } 
+  else { 
+    callback(new Error('Not allowed by CORS')); 
+  } }, 
+  credentials: true, // Allow credentials (cookies, authorization headers) 
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+   allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'], 
+  }));
+  
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.timeout = 30000;
@@ -98,6 +107,10 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
+app.use((req, res, next) => { 
+  res.header('Access-Control-Allow-Credentials', 'true'); 
+  next(); 
+});
 
 //User ka authentication
 passport.use(new LocalStrategy(User.authenticate()));
