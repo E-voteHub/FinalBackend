@@ -24,16 +24,14 @@ const app = express();
 const PORT = process.env.PORT || 3000
 
 
-dotenv.config()
 
-app.use(cors({ origin: 'https://votelyovs.netlify.app', 
-  // Set origin based on environment 
-  credentials: true, // Enable sending cookies with requests 
-  methods: ['GET', 'POST', 'PUT', 'DELETE','OPTIONS'], // Allowed HTTP methods including preflight 
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'], // Allowed headers including CSRF token 
-  
-}));
 
+const corsOptions = {
+    origin: '*', // Allow all origins (can be replaced with a specific domain or array of domains)
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
+    allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+};
+app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.timeout = 30000;
