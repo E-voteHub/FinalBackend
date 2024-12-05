@@ -26,7 +26,7 @@ const PORT = process.env.PORT || 3000
 
 dotenv.config()
 
-app.use(cors({ origin: process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : 'http://localhost:5173', 
+app.use(cors({ origin: 'https://votelyovs.netlify.app', 
   // Set origin based on environment 
   credentials: true, // Enable sending cookies with requests 
   methods: ['GET', 'POST', 'PUT', 'DELETE','OPTIONS'], // Allowed HTTP methods including preflight 
