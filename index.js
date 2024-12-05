@@ -22,16 +22,18 @@ import adminLogin from './src/Route/AdminLogin.js'
 // import multer from 'multer';
 const app = express();
 const PORT = process.env.PORT || 3000
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 dotenv.config()
 
-app.use(cors({
-  origin: '*',  // Allow all origins
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
- 
+app.use(cors({ origin: process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : 'https://your-production-domain.com', 
+  // Set origin based on environment 
+  credentials: true, // Enable sending cookies with requests 
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods including preflight 
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'], // Allowed headers including CSRF token 
+  
 }));
-
 
 
 
@@ -42,8 +44,7 @@ app.use(cors({
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+
 
 
 
@@ -106,8 +107,8 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 
-app.use('/api/admin/register', adminRegister); 
-app.use('/api/admin/login', adminLogin);
+app.use( adminRegister); 
+app.use( adminLogin);
 
 app.post('/api/register', (req, res) => {
     
