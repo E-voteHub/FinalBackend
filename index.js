@@ -26,7 +26,7 @@ const PORT = process.env.PORT || 3000
 
 
 
-const allowedOrigins = ['https://votelyovs.netlify.app', 'http://localhost:5173']; 
+const allowedOrigins = ['https://ovs-frontend-puce.vercel.app', 'http://localhost:5173','*']; 
 app.use(cors({ 
   origin: function (origin, callback) {
    // Check if the origin is in the allowed origins list or if it's undefined (which means it's a same-origin request). 
