@@ -26,7 +26,7 @@ const PORT = process.env.PORT || 3000
 
 
 
-const allowedOrigins = ['https://ovs-frontend-puce.vercel.app', 'http://localhost:5173','*']; 
+const allowedOrigins = ['https://ovs-frontend-puce.vercel.app', 'http://localhost:5173']; 
 app.use(cors({ 
   origin: function (origin, callback) {
    // Check if the origin is in the allowed origins list or if it's undefined (which means it's a same-origin request). 
@@ -109,7 +109,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 // Adding CORS headers manually to routes 
 app.use((req, res, next) => { 
-  res.header('Access-Control-Allow-Origin', 'https://votelyovs.netlify.app'); 
+  res.header('Access-Control-Allow-Origin', 'https://ovs-frontend-puce.vercel.app'); 
   res.header('Access-Control-Allow-Credentials', 'true'); 
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS'); 
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-csrf-token'); 
