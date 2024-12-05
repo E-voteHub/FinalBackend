@@ -148,22 +148,26 @@ app.get("/",(req,res)=>{
   res.send("Hellow world")
 })
 
-app.post('/api/login', passport.authenticate('local'), (req, res) => { 
-   req.session.user = req.user; 
-   
-   const email = req.body.email;
-  // console.log(email," ",req.body)
-   User.findOne({Email : email})
-   .then((user)=>{
-    console.log(user);
-    res.json({ success: true, message: 'Login successful', username : user.username});
-    
-   }).catch((error)=>{
-    console.log("Error in login route backend", error);
-    
-   })
-   
+app.post('/api/login', passport.authenticate('local'), async (req, res) => {
+    try {
+        req.session.user = req.user;
+
+        // Use async/await for the database call
+        const user = await User.findOne({ Email: req.body.email });
+
+        // If user is not found, handle the error
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        // Send response after user is found
+        res.json({ success: true, message: 'Login successful', username: user.username });
+    } catch (error) {
+        console.error("Error in login route backend", error);
+        res.status(500).json({ message: "Login failed", error: error.message });
+    }
 });
+
 
 //RegistertoVote
 
