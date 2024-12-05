@@ -51,20 +51,18 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 
 
-//mongo ki details hai sensitive
+
+(async () => { 
+try { 
 const mongoUsername = process.env.MONGO_USERNAME; 
 const mongoPassword = process.env.MONGO_PASSWORD; 
-const mongoCluster = process.env.MONGO_CLUSTER;
-
-//mongooose atlas connnection
-await mongoose.connect(`mongodb+srv://${mongoUsername}:${mongoPassword}@${mongoCluster}/?retryWrites=true&w=majority&appName=Cluster0`)
-    .then(() => {
-        console.log("DataBase Connected");
-    })
-    .catch((e) => {
-        console.error("Error :", e);
-    });
-
+const mongoCluster = process.env.MONGO_CLUSTER; 
+await mongoose.connect(`mongodb+srv://${mongoUsername}:${mongoPassword}@${mongoCluster}/?retryWrites=true&w=majority&appName=Cluster0`); 
+console.log("Database Connected");
+ } catch (e) {
+ console.error("Database Connection Error:", e); 
+}
+})();
     
 const Schema = mongoose.Schema;
 
