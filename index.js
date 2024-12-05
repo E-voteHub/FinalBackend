@@ -155,17 +155,20 @@ app.get("/",(req,res)=>{
 })
 
 app.post('/api/login', passport.authenticate('local'), (req, res) => {
-    try {
-       
-        req.session.user = req.user;
-
-        
-        res.json({ success: true, message: 'Login successful', username: req.user.username });
-    } catch (error) {
-        console.error("Error in login route backend", error);
-        res.status(500).json({ message: "Login failed", error: error.message });
-    }
+  try {
+    console.log('Login request received');
+    req.session.user = req.user;
+    res.json({ success: true, message: 'Login successful', username: req.user.username });
+  } catch (error) {
+    console.error("Error in login route backend", error);
+    res.status(500).json({ message: "Login failed", error: error.message });
+  }
 });
+
+app.get("/api/login",(req,res)=>{
+  res.send("/api/get")
+})
+
 
 
 //RegistertoVote
