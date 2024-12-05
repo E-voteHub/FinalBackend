@@ -23,7 +23,7 @@ import adminLogin from './src/Route/AdminLogin.js'
 const app = express();
 const PORT = process.env.PORT || 3000
 
-
+dotenv.config()
 
 
 // Configure CORS
@@ -256,6 +256,29 @@ app.post("/api/registertovote", async (req, res) => {
 });
 
 
+app.post("/api/candidate/approved", async (req, res) => {
+  const  {username}  = req.body;
+  
+  
+
+  try {
+    const user = await RegisteredUser.findOne({ username: username });
+    if (!user) {
+      return res.status(404).json({ success: false, message: `User with username ${username} is not registered.` });
+    }
+
+    try {
+      const response = await Candidate.find({ isSelected: true });
+      res.status(200).json(response);
+    } catch (error) {
+      console.error('Error fetching candidates:', error);
+      res.status(500).json({ success: false, message: 'Internal Server Error while fetching candidates.', error: error.message });
+    }
+  } catch (error) {
+    console.error("Error checking registered user in /api/candidate/approved:", error);
+    res.status(500).json({ success: false, message: 'Internal Server Error while checking registered user.', error: error.message });
+  }
+});
 
 
 
