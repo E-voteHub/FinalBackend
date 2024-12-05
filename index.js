@@ -27,7 +27,7 @@ const PORT = process.env.PORT || 3000
 
 
 const corsOptions = {
-    origin: '*', // Allow all origins (can be replaced with a specific domain or array of domains)
+    origin: 'https://votelyovs.netlify.app/', // Allow all origins (can be replaced with a specific domain or array of domains)
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
     allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
 };
