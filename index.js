@@ -29,7 +29,7 @@ dotenv.config()
 app.use(cors({ origin: process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : 'http://localhost:5173', 
   // Set origin based on environment 
   credentials: true, // Enable sending cookies with requests 
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods including preflight 
+  methods: ['GET', 'POST', 'PUT', 'DELETE','OPTIONS'], // Allowed HTTP methods including preflight 
   allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'], // Allowed headers including CSRF token 
   
 }));
