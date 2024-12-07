@@ -38,23 +38,23 @@ _**![alt text](<Admin HomePage.png>)**_
 _**![alt text](<Admin Login.png>)**_
 _** ![alt text](Login.png)**_
 
+### Chatbot
+_**![alt text](Chat.png)**_
+
 ### Register Page
 _**![alt text](Register-1.png)**_
 
-### Registration Page
-_**![alt text](Register.png)**_
+### Voting Registration
+_**![alt text](votingRegistration.png)**_
 
 ### News Page
 _**![alt text](News.png)**_
 
-### Chatbot
-_**![alt text](Chat.png)**_
-
 ### Approval Section
 _**![alt text](<Pendig Approval.png>)**_
 
-### Voting Registration
-_**![alt text](votingRegistration.png)**_
+### Candidate Registration
+_**![alt text](CandidateRegistration.png)**_
 
 ### Voting Section
 _**![alt text](votingPage.png)**_
