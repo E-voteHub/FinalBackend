@@ -11,7 +11,7 @@
       "src": "/api/register",
       "methods": ["OPTIONS", "POST"],
       "headers": {
-        "Access-Control-Allow-Origin": "https://ovs-frontend-prune.vercel.app",
+        "Access-Control-Allow-Origin": "https://ovs-frontend-puce.vercel.app",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, Authorization"
       },
