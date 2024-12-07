@@ -51,7 +51,7 @@ _**![alt text](Chat.png)**_
 _**![alt text](Register-1.png)**_
 
 ### Voting Registration
-_**![alt text](votingRegistration.png)**_
+_**![Voting Registration]]()**_
 
 ### News Page
 _**![alt text](News.png)**_
