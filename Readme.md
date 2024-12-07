@@ -5,7 +5,7 @@ An online voting system built with React and Node.js, using MongoDB as the datab
 
 ## Technologies Used
 - **Frontend**: React
-- **Backend**: Node.js
+- **Backend**: Node.js,Express
 - **Database**: MongoDB,Blocakchain Database 
 - **Image Storage**: Cloudinary
 
@@ -27,6 +27,12 @@ The Admin schema includes fields for username, role (with a default value of 'ad
 The User schema has fields for username, email, and the date of account creation. The username and email fields are unique to prevent duplication, and the email field is also trimmed and converted to lowercase to ensure consistency. This schema tracks the date and time when each record is created.
 
 ## Features
+
+### DFD (Data Flow Diagram)
+_**![alt text](<DFD solid.png>)**_
+
+### Architecture Design
+_**![alt text](<Architecture solid.png>)**_
 
 ### Homepage
 _**![alt text](HomePage1.png)**_
@@ -63,3 +69,5 @@ _**![alt text](votingPage.png)**_
 
 ## Conclusion
 This online voting system ensures secure and efficient voting processes, leveraging modern web technologies and robust database management.
+
+## In Progress
