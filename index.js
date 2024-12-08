@@ -3,13 +3,13 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import passport from 'passport';
-import passportLocalMongoose from 'passport-local-mongoose';
 import LocalStrategy from 'passport-local';
 import session from 'express-session';
 import cors from 'cors'
 import RegisteredUser from './src/models/RegisteredUser.js';
 import Candidate from './src/models/CandidateSchema.js';
 import Admin from './src/models/AdminSchema.js'
+import User from './src/models/UserSchema.js'
 import { v4 as uuidv4 } from 'uuid';
 // import { GridFSBucket } from 'mongodb'; //for image bucket
 import { v2 as cloudinary } from "cloudinary"
@@ -19,6 +19,7 @@ import upload from './src/Storage/Multer.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import adminRegister from './src/Route/AdminRegister.js'
 import adminLogin from './src/Route/AdminLogin.js'
+import votingRoute from './src/Route/Vote.js'
 // import multer from 'multer';
 const app = express();
 const PORT = process.env.PORT || 3000
@@ -27,7 +28,7 @@ dotenv.config()
 
 
 // Configure CORS
-const allowedOrigins = ['https://ovs-frontend-puce.vercel.app', 'http://localhost:5173'];
+const allowedOrigins = ['https://ovs-frontend-puce.vercel.app', 'http://localhost:5173','*'];
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
@@ -88,30 +89,7 @@ console.log("Database Connected");
 }
 })();
     
-const Schema = mongoose.Schema;
 
-// Dont worry you can steal this schema but dont mess my project
-const UserSchema = new Schema({
-    username: { type: String, unique: true, required: true },
-    Email: {
-        type: String,
-        required : true,
-        unique: true,
-        trim: true,
-        lowercase: true
-    },
-    date: {
-        type: Date,
-        default: Date.now
-    }
-});
-
-
-
-
-UserSchema.plugin(passportLocalMongoose);
-
-const User = mongoose.model('User', UserSchema);
 
 app.use(session({ 
   secret: process.env.SESSION_SECRET, 
@@ -134,6 +112,7 @@ passport.deserializeUser(User.deserializeUser());
 
 app.use( adminRegister); 
 app.use( adminLogin);
+app.use('/api/vote', votingRoute)
 
 app.post('/api/register', (req, res) => {
     
