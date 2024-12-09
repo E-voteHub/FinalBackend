@@ -3,7 +3,7 @@ import crypto from 'crypto'
 
 async function createBlock(transactions,previousHash){
     const block = new Block({
-        index:(await Block.countDocuments())+1,
+        index:(await Block.countDocuments()),
         timestamp: new Date(),
         transactions,
         previousHash,
@@ -14,7 +14,10 @@ async function createBlock(transactions,previousHash){
 }
 
 async function getLastBlock(){
-    return await Block.findOne().sort({index :-1});
+    const response =  await Block.findOne().sort({index :-1});
+    console.log(response);
+    
+    return response
 }
 
 export {createBlock , getLastBlock};

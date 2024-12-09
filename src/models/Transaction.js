@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const TransactionSchema = new mongoose.Schema({
-    voterId : String,
+    voterUsername : String,
     candidateId : String
 },{timestamps:true})
 
