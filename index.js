@@ -28,7 +28,7 @@ dotenv.config()
 
 
 // Configure CORS
-const allowedOrigins = ['https://ovs-frontend-puce.vercel.app/', 'http://localhost:5173','*'];
+const allowedOrigins = ['https://ovs-frontend-puce.vercel.app/', 'http://localhost:5173'];
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
@@ -385,3 +385,8 @@ app.get('/api/logout', function(req, res, next) {
 app.listen(PORT, () => {
     console.log(`Server is running on port 3000 visit http://localhost:${PORT}`);
 });
+
+
+//ELECTION - REACT FRONTEND FOLDER
+//BACKEND - NODEJS BACKEND FOLDER
+//GITHUB WILL BE PROVIDED IN DESCRIPTION 
