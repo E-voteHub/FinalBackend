@@ -28,6 +28,7 @@
     "passport-local": "^1.0.0",
     "passport-local-mongoose": "^8.0.0",
     "path": "^0.12.7",
+    "path-to-regexp": "^0.1.12",
     "url": "^0.11.4",
     "uuid": "^11.0.3"
   }
